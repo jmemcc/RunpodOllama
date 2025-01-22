@@ -20,23 +20,35 @@ class HandlerJob(TypedDict):
 
 def handler(job: HandlerJob):
     base_url = "http://0.0.0.0:11434"
-    input = job["input"]
+    input_data = job["input"]
+    
+    try:
+        # Ensure input is properly formatted
+        if "stream" in input_data["input"]:
+            input_data["input"]["stream"] = False
+            
+        # Get model from command line or default
+        model = sys.argv[1] if len(sys.argv) > 1 else "mistral"
+        input_data["input"]["model"] = model
+        
+        # Make request to Ollama
+        response = requests.post(
+            url=f"{base_url}/{input_data['method_name']}",
+            headers={"Content-Type": "application/json"},
+            json=input_data["input"],
+        )
+        response.raise_for_status()
+        
+        try:
+            return response.json()
+        except requests.exceptions.JSONDecodeError:
+            return {"response": response.text}
+            
+    except Exception as e:
+        return {
+            "error": str(e),
+            "status": "error"
+        }
 
-    # streaming is not supported in serverless mode
-    input["input"]["stream"] = False
-    print(sys.argv)
-    model = sys.argv[1]
-    input["input"]["model"] = model
-
-    response = requests.post(
-        url=f"{base_url}/{input['method_name']}",
-        headers={"Content-Type": "application/json"},
-        json=input["input"],
-    )
-    response.encoding = "utf-8"
-
-    # TODO: handle errors
-    return response.json()
-
-
-runpod.serverless.start({"handler": handler})
+if __name__ == "__main__":
+    runpod.serverless.start({"handler": handler})
