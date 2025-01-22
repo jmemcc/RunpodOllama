@@ -33,11 +33,11 @@ RUN pip install --upgrade pip
 
 # Add your file
 ADD . .
+RUN chmod +x /start.sh
 
 RUN pip install runpod
 
 # Override Ollama's entrypoint
-ENTRYPOINT ["bin/bash", "start.sh"]
+ENTRYPOINT ["/bin/bash", "start.sh"]
 
 CMD ["mistral"]
-
