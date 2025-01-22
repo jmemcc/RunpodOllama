@@ -32,11 +32,11 @@ RUN update-alternatives --install /usr/bin/python3 python3 /usr/bin/python3.10 9
 RUN pip install --upgrade pip
 
 # Add your file
-COPY start.sh /start.sh
-COPY runpod_wrapper.py /runpod_wrapper.py
+COPY ./server/start.sh /start.sh
+COPY ./server/runpod_wrapper.py /runpod_wrapper.py
 RUN chmod +x /start.sh
 
-RUN pip install runpod
+RUN pip install runpod 
 
 # Override Ollama's entrypoint
 ENTRYPOINT ["/bin/bash", "/start.sh"]
